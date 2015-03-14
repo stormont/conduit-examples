@@ -1,0 +1,6 @@
+dist/
+bin/
+.cabal-sandbox/
+cabal.sandbox.config
+*.hi
+*.o
