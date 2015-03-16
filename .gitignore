@@ -4,3 +4,4 @@ bin/
 cabal.sandbox.config
 *.hi
 *.o
+examples/conduit-101-01/output.txt
