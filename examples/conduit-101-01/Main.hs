@@ -11,6 +11,12 @@ import Data.Conduit
 import System.IO (stdin)
 
 
+-- Primary references from:
+--   http://www.stackage.org/snapshot/nightly-2015-03-08/package/conduit-1.2.4
+--   http://www.stackage.org/snapshot/nightly-2015-03-08/package/conduit-extra-1.1.7.0
+-- Bits and pieces from:
+--   https://www.fpcomplete.com/user/snoyberg/library-documentation/conduit-overview
+--   https://www.fpcomplete.com/user/chad/snippets/random-code-snippets/conduit-from-filepath-to-bytestrings
 main = do
   let input = "The quick brown fox jumped over the lazy dog"
   splitWordsExample input
@@ -27,9 +33,6 @@ main = do
   filesExample_3
     "examples/conduit-101-01/words.txt"
     "examples/conduit-101-01/lengths.txt"
-  socketExample_1
-  socketExample_2
-  socketExample_3
 
 
 splitWordsExample
@@ -93,6 +96,8 @@ userInputExample_1 = do
   putStrLn "-------------------------------"
   putStrLn "EXAMPLE: Splitting user input 1"
   putStrLn "-------------------------------"
+  putStrLn "Enter some input."
+  putStrLn ""
   putStr "> "
   input <- getLine
   xs <- wordsSource input
@@ -106,6 +111,8 @@ userInputExample_2 = do
   putStrLn "-------------------------------"
   putStrLn "EXAMPLE: Splitting user input 2"
   putStrLn "-------------------------------"
+  putStrLn "Enter some input."
+  putStrLn ""
   putStr "> "
   _ <- userInputSource
     $$ identityStdOutSink
@@ -117,7 +124,9 @@ userInputExample_3 = do
   putStrLn "-------------------------------"
   putStrLn "EXAMPLE: Splitting user input 3"
   putStrLn "-------------------------------"
-  putStrLn "Simply hit <ENTER> with no input to quit"
+  putStrLn "Enter some input, multiple times."
+  putStrLn ""
+  putStrLn "Simply hit <ENTER> with no input to quit."
   _ <- userInputConduitSource
     $$ identitiesStdOutSink
   putStrLn ""
@@ -162,51 +171,6 @@ filesExample_3 input1 input2 = do
   _ <- runResourceT $  multiFileInputSource [input1, input2]
                     $= conduitFile
                     $$ byteStringStdOutSink
-  putStrLn ""
-
-
-socketExample_1 :: IO ()
-socketExample_1 = do
-  putStrLn "------------------------------"
-  putStrLn "EXAMPLE: Reading from a socket"
-  putStrLn "------------------------------"
-  putStrLn "Use 'telnet 127.0.0.1 4000' or equivalent on port 4000"
-  putStrLn "to read data from the socket."
-  putStrLn ""
-  putStrLn "Reading will continue until a newline is entered."
-  putStrLn "Press <ENTER> when ready to begin."
-  putStr "> "
-  _ <- getLine
-  putStrLn ""
-
-
-socketExample_2 :: IO ()
-socketExample_2 = do
-  putStrLn "----------------------------"
-  putStrLn "EXAMPLE: Writing to a socket"
-  putStrLn "----------------------------"
-  putStrLn "Use 'telnet 127.0.0.1 5000' or equivalent on port 5000"
-  putStrLn "to see results of writing to the socket."
-  putStrLn ""
-  putStrLn "Enter input and press <ENTER> to write the data."
-  putStr "> "
-  _ <- getLine
-  putStrLn ""
-
-
-socketExample_3 :: IO ()
-socketExample_3 = do
-  putStrLn "-------------------------------------------------------"
-  putStrLn "EXAMPLE: Reading from one socket and writing to another"
-  putStrLn "-------------------------------------------------------"
-  putStrLn "Use 'telnet 127.0.0.1 4000' or equivalent on port 4000"
-  putStrLn "to see results of writing to the socket and use port 5000"
-  putStrLn "to see results of writing to the socket."
-  putStrLn ""
-  putStrLn "Reading will continue until a newline is entered."
-  putStrLn "Press <ENTER> when ready to begin."
-  putStr "> "
-  _ <- getLine
   putStrLn ""
 
 
@@ -259,6 +223,21 @@ identityStdOutSink :: Consumer String IO ()
 identityStdOutSink = awaitForever $ liftIO . putStrLn
 
 
+yieldStrings :: ConduitM ByteString [String] IO Bool
+yieldStrings = do
+  mbs <- await
+  case mbs of
+    Nothing -> return False
+    Just bs -> do
+      let s = takeWhile (\x -> x /= '\r' && x /= '\n')
+            $ unpack bs
+      case s of
+        ""   -> return False
+        ss   -> do
+          yield $ words ss
+          return True
+
+
 userInputConduitSource :: Source IO [String]
 userInputConduitSource = do
      CB.sourceHandle stdin
@@ -267,17 +246,10 @@ userInputConduitSource = do
   where
     loop = do
       liftIO $ putStr "> "
-      mbs <- await
-      case mbs of
-        Nothing -> return ()
-        Just bs -> do
-          let s = takeWhile (\x -> x /= '\r' && x /= '\n')
-                $ unpack bs
-          case s of
-            ""   -> return ()
-            ss   -> do
-              yield $ words ss
-              loop
+      r <- yieldStrings
+      case r of
+        False -> return ()
+        True -> loop
 
 
 identitiesStdOutSink

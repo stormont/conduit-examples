@@ -22,7 +22,7 @@ library
   -- hs-source-dirs:
   
   build-depends:
-    base >=4.7
+    base >= 4.7
   
   default-language:
     Haskell2010
@@ -35,7 +35,7 @@ executable conduit-101-01
     Main.hs
   
   build-depends:
-    base >=4.7,
+    base >= 4.7,
     bytestring >= 0.10,
     conduit >= 1.2,
     conduit-extra >= 1.1,
@@ -44,6 +44,56 @@ executable conduit-101-01
     
   hs-source-dirs:
     examples/conduit-101-01
+  
+  default-language:
+    Haskell2010
+  
+  ghc-options:
+    -O2 -threaded
+
+executable conduit-101-02
+  -- other-modules:
+  -- other-extensions:
+  
+  main-is:
+    Main.hs
+  
+  build-depends:
+    base >= 4.7,
+    bytestring >= 0.10,
+    conduit >= 1.2,
+    conduit-extra >= 1.1,
+    network >= 2.4,
+    mtl >= 2.1,
+    resourcet >= 1.1
+    
+  hs-source-dirs:
+    examples/conduit-101-02
+  
+  default-language:
+    Haskell2010
+  
+  ghc-options:
+    -O2 -threaded
+
+executable conduit-101-03
+  -- other-modules:
+  -- other-extensions:
+  
+  main-is:
+    Main.hs
+  
+  build-depends:
+    base >= 4.7,
+    bytestring >= 0.10,
+    conduit >= 1.2,
+    conduit-extra >= 1.1,
+    network >= 2.4,
+    mtl >= 2.1,
+    resourcet >= 1.1
+    
+  hs-source-dirs:
+    examples/conduit-101-03
   
   default-language:
     Haskell2010
