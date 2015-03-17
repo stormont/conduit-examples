@@ -2,8 +2,8 @@
 module Main
   where
 
+import qualified Data.ByteString.Char8 as B
 import Control.Monad.State
-import Data.ByteString.Char8 (ByteString, unpack)
 import Data.Conduit
 import Data.Conduit.Network
 import Network.Socket (withSocketsDo)

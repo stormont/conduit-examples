@@ -2,8 +2,8 @@
 module Main
   where
 
+import qualified Data.ByteString.Char8 as B
 import Control.Monad.State
-import Data.ByteString.Char8 (ByteString, unpack)
 import Data.Conduit
 import Data.Conduit.Network
 import Network.Socket (withSocketsDo)
@@ -29,14 +29,14 @@ main = do
       $$ identitiesStdOutSink
 
 
-yieldStrings :: ConduitM ByteString String IO Bool
+yieldStrings :: ConduitM B.ByteString String IO Bool
 yieldStrings = do
   mbs <- await
   case mbs of
     Nothing -> return False
     Just bs -> do
       let s = takeWhile (\x -> x /= '\r' && x /= '\n')
-            $ unpack bs
+            $ B.unpack bs
       case s of
         ""   -> return False
         ss   -> do
@@ -44,7 +44,7 @@ yieldStrings = do
           return True
 
 
-splitWords :: ConduitM ByteString String IO ()
+splitWords :: ConduitM B.ByteString String IO ()
 splitWords = do
   loop
   where
