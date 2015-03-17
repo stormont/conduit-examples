@@ -25,7 +25,7 @@ main = do
   withSocketsDo $ do
     runTCPServer (serverSettings 4000 "*") $ \appData -> do
          appSource appData
-      $= echo
+      $= splitWords
       $$ identitiesStdOutSink
 
 
@@ -44,8 +44,8 @@ yieldStrings = do
           return True
 
 
-echo :: ConduitM ByteString String IO ()
-echo = do
+splitWords :: ConduitM ByteString String IO ()
+splitWords = do
   loop
   where
     loop = do
