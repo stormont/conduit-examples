@@ -4,7 +4,7 @@ This project contains examples of using Haskell's conduit library.
 
 ### What is this repository for? ###
 
-* Quick summary
+* These code examples provide iterative examples of building up different uses of conduit (mostly) one step at a time
 * Version 0.1
 
 ### How do I get set up? ###
