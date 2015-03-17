@@ -63,9 +63,8 @@ executable conduit-101-02
     bytestring >= 0.10,
     conduit >= 1.2,
     conduit-extra >= 1.1,
-    network >= 2.4,
     mtl >= 2.1,
-    resourcet >= 1.1
+    network >= 2.4
     
   hs-source-dirs:
     examples/conduit-101-02
@@ -88,12 +87,36 @@ executable conduit-101-03
     bytestring >= 0.10,
     conduit >= 1.2,
     conduit-extra >= 1.1,
-    network >= 2.4,
     mtl >= 2.1,
-    resourcet >= 1.1
+    network >= 2.4
     
   hs-source-dirs:
     examples/conduit-101-03
+  
+  default-language:
+    Haskell2010
+  
+  ghc-options:
+    -O2 -threaded
+
+executable conduit-101-04
+  -- other-modules:
+  -- other-extensions:
+  
+  main-is:
+    Main.hs
+  
+  build-depends:
+    async >= 2.0,
+    base >= 4.7,
+    bytestring >= 0.10,
+    conduit >= 1.2,
+    conduit-extra >= 1.1,
+    mtl >= 2.1,
+    network >= 2.4
+    
+  hs-source-dirs:
+    examples/conduit-101-04
   
   default-language:
     Haskell2010
