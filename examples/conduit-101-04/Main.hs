@@ -3,8 +3,6 @@ module Main
   where
 
 import qualified Data.ByteString.Char8 as B
-import Control.Concurrent.Async (concurrently)
-import Control.Monad (void)
 import Control.Monad.State
 import Data.Conduit
 import Data.Conduit.Network
@@ -36,9 +34,7 @@ main = do
   withSocketsDo $ do
     runTCPServer (serverSettings 4002 "*") $ \client ->
       runTCPClient (clientSettings 4000 "localhost") $ \server -> do
-        void $ concurrently
-          (appSource server $$ appSink client)
-          (appSource client $= echo $$ appSink server)
+        (appSource client $= echo $$ appSink server)
 
 
 echo :: ConduitM B.ByteString B.ByteString IO ()

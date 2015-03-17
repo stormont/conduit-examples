@@ -107,7 +107,6 @@ executable conduit-101-04
     Main.hs
   
   build-depends:
-    async >= 2.0,
     base >= 4.7,
     bytestring >= 0.10,
     conduit >= 1.2,
