@@ -22,7 +22,7 @@ Installing:
 * Run `cabal configure`; install any missing libraries with `cabal install library-name`
 * Run `cabal build`
 * Everything should _just work_ from here, assuming your environment is not too crazy/different from the test environments listed above
-* On *nix, you might not see output on the network examples until you <Ctrl+C> the server
+* On *nix, you might not see output on the network examples until you Ctrl+C the server
 
 ### How do I run the examples? ###
 
@@ -41,13 +41,13 @@ conduit-101-03:
 
 * Run the binary built by `cabal build`; this should be at `dist/build/conduit-101-03/conduit-101-03`
 * Run the server binary from `conduit-101-02`
-* Press <ENTER> for the program to immediately write some output to the server
+* Press ENTER for the program to immediately write some output to the server
 
 conduit-101-04:
 
 * Run the binary built by `cabal build`; this should be at `dist/build/conduit-101-04/conduit-101-04`
 * Run the server binary from `conduit-101-02`
-* Press <ENTER>
+* Press ENTER to continue to the next setup step
 * From another shell terminal, run `telnet 127.0.0.1 4002` (or an equivalent tool to communicate to localhost on port 4002)
-* Press <ENTER>
+* Press ENTER to move to the "execution" step
 * Now, type some text into the telnet terminal; you should see the same output run through this server as well as the `conduit-101-02` server
