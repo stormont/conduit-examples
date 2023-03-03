@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RankNTypes #-}
 module Main
   where
 
@@ -23,10 +23,10 @@ main = do
   putStrLn ""
   putStr "> "
   withSocketsDo $ do
-    runTCPServer (serverSettings 4000 "*") $ \appData -> do
-         appSource appData
-      $= splitWords
-      $$ identitiesStdOutSink
+    runTCPServer (serverSettings 4000 "*") $ \appData -> runConduit $ do
+      appSource appData
+      .| splitWords
+      .| identitiesStdOutSink
 
 
 yieldStrings :: ConduitM B.ByteString String IO Bool
@@ -56,5 +56,6 @@ splitWords = do
 
 
 identitiesStdOutSink
-  :: Consumer String IO ()
+  :: forall o. ConduitT String o IO ()
 identitiesStdOutSink = awaitForever $ liftIO . putStr
+
