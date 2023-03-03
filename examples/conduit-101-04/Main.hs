@@ -33,8 +33,8 @@ main = do
   putStr "> "
   withSocketsDo $ do
     runTCPServer (serverSettings 4002 "*") $ \client ->
-      runTCPClient (clientSettings 4000 "localhost") $ \server -> do
-        (appSource client $= echo $$ appSink server)
+      runTCPClient (clientSettings 4000 "localhost") $ \server -> runConduit $ do
+        appSource client .| echo .| appSink server
 
 
 echo :: ConduitM B.ByteString B.ByteString IO ()
@@ -42,3 +42,4 @@ echo = do
   awaitForever $ \x -> do
     liftIO $ B.putStr x
     yield x
+
