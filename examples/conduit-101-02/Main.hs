@@ -4,6 +4,7 @@ module Main
 
 import qualified Data.ByteString.Char8 as B
 import Control.Monad.State
+import Control.Monad (when)
 import Data.Conduit
 import Data.Conduit.Network
 import Network.Socket (withSocketsDo)
@@ -50,9 +51,7 @@ splitWords = do
   where
     loop = do
       r <- yieldStrings
-      case r of
-        False -> return ()
-        True  -> loop
+      when r loop
 
 
 identitiesStdOutSink
