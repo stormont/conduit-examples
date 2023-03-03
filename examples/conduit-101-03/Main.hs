@@ -19,6 +19,7 @@ main = do
   putStr "> "
   _ <- getLine
   withSocketsDo $ do
-    runTCPClient (clientSettings 4000 "localhost") $ \server -> do
+    runTCPClient (clientSettings 4000 "localhost") $ \server -> runConduit $ do
          yield "hello world\n"
-      $$ appSink server
+      .| appSink server
+

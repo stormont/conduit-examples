@@ -1,9 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RankNTypes #-}
 module Main
   where
 
 import qualified Data.ByteString.Char8 as B
 import Control.Monad.State
+import Control.Monad (when)
 import Data.Conduit
 import Data.Conduit.Network
 import Network.Socket (withSocketsDo)
@@ -23,10 +24,10 @@ main = do
   putStrLn ""
   putStr "> "
   withSocketsDo $ do
-    runTCPServer (serverSettings 4000 "*") $ \appData -> do
-         appSource appData
-      $= splitWords
-      $$ identitiesStdOutSink
+    runTCPServer (serverSettings 4000 "*") $ \appData -> runConduit $ do
+      appSource appData
+      .| splitWords
+      .| identitiesStdOutSink
 
 
 yieldStrings :: ConduitM B.ByteString String IO Bool
@@ -50,11 +51,10 @@ splitWords = do
   where
     loop = do
       r <- yieldStrings
-      case r of
-        False -> return ()
-        True  -> loop
+      when r loop
 
 
 identitiesStdOutSink
-  :: Consumer String IO ()
+  :: forall o. ConduitT String o IO ()
 identitiesStdOutSink = awaitForever $ liftIO . putStr
+

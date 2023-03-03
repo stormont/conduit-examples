@@ -42,8 +42,8 @@ splitWordsExample input = do
   putStrLn "------------------------"
   putStrLn "EXAMPLE: Splitting words"
   putStrLn "------------------------"
-  xs <- wordsSource input
-     $$ identitySink
+  xs <- runConduit $ wordsSource input
+     .| identitySink
   mapM_ putStrLn xs
   putStrLn ""
 
@@ -55,9 +55,9 @@ wordLengthExample_1 input = do
   putStrLn "-----------------------"
   putStrLn "EXAMPLE: Word lengths 1"
   putStrLn "-----------------------"
-  xs <- wordsSource input
-     $= numLettersConduit
-     $$ identitySink
+  xs <- runConduit $ wordsSource input
+     .| numLettersConduit
+     .| identitySink
   mapM_ (putStrLn . show) xs
   putStrLn ""
 
@@ -69,10 +69,10 @@ wordLengthExample_2 input = do
   putStrLn "-----------------------"
   putStrLn "EXAMPLE: Word lengths 2"
   putStrLn "-----------------------"
-  xs <- wordsSource input
-     $= numLettersConduit
-     $= showConduit
-     $$ identitySink
+  xs <- runConduit $ wordsSource input
+     .| numLettersConduit
+     .| showConduit
+     .| identitySink
   mapM_ putStrLn xs
   putStrLn ""
 
@@ -84,9 +84,9 @@ wordLengthExample_3 input = do
   putStrLn "-----------------------"
   putStrLn "EXAMPLE: Word lengths 3"
   putStrLn "-----------------------"
-  xs <- wordsSource input
-     $= fusedConduit
-     $$ identitySink
+  xs <- runConduit $ wordsSource input
+     .| fusedConduit
+     .| identitySink
   mapM_ putStrLn xs
   putStrLn ""
 
@@ -100,8 +100,8 @@ userInputExample_1 = do
   putStrLn ""
   putStr "> "
   input <- getLine
-  xs <- wordsSource input
-     $$ identitySink
+  xs <- runConduit $ wordsSource input
+     .| identitySink
   mapM_ putStrLn xs
   putStrLn ""
 
@@ -114,8 +114,8 @@ userInputExample_2 = do
   putStrLn "Enter some input."
   putStrLn ""
   putStr "> "
-  _ <- userInputSource
-    $$ identityStdOutSink
+  _ <- runConduit $ userInputSource
+    .| identityStdOutSink
   putStrLn ""
 
 
@@ -127,8 +127,8 @@ userInputExample_3 = do
   putStrLn "Enter some input, multiple times."
   putStrLn ""
   putStrLn "Simply hit <ENTER> with no input to quit."
-  _ <- userInputConduitSource
-    $$ identitiesStdOutSink
+  _ <- runConduit $ userInputConduitSource
+    .| identitiesStdOutSink
   putStrLn ""
 
 
@@ -139,8 +139,8 @@ filesExample_1 file = do
   putStrLn "-------------------------------"
   putStrLn "EXAMPLE: Input source from file"
   putStrLn "-------------------------------"
-  _ <- runResourceT $  fileInputSource file
-                    $$ identitiesResStdOutSink
+  _ <- runConduitRes $ fileInputSource file
+                    .| identitiesResStdOutSink
   putStrLn ""
 
 
@@ -153,9 +153,9 @@ filesExample_2 input output = do
   putStrLn "EXAMPLE: Output sink to file"
   putStrLn "----------------------------"
   putStrLn $ "See output file: " ++ output
-  _ <- runResourceT $  fileInputSource input
-                    $= conduitToByteString
-                    $$ CB.sinkFile output
+  _ <- runConduitRes $ fileInputSource input
+                    .| conduitToByteString
+                    .| CB.sinkFile output
   written <- readFile output
   putStrLn written
 
@@ -168,16 +168,16 @@ filesExample_3 input1 input2 = do
   putStrLn "-----------------------------"
   putStrLn "EXAMPLE: Multiple input files"
   putStrLn "-----------------------------"
-  _ <- runResourceT $  multiFileInputSource [input1, input2]
-                    $= conduitFile
-                    $$ byteStringStdOutSink
+  _ <- runConduitRes $ multiFileInputSource [input1, input2]
+                    .| conduitFile
+                    .| byteStringStdOutSink
   putStrLn ""
 
 
 wordsSource
   :: Monad m
   => String
-  -> Producer m [String]
+  -> forall i. ConduitT i [String] m ()
 wordsSource = yield . words
 
 
@@ -189,23 +189,23 @@ identitySink = CL.foldMap id
 
 numLettersConduit
   :: Monad m
-  => Conduit [String] m [Int]
+  => ConduitT [String] [Int] m ()
 numLettersConduit = CL.map (map length)
 
 
 showConduit
   :: Monad m
-  => Conduit [Int] m [String]
+  => ConduitT [Int] [String] m ()
 showConduit = CL.map (map show)
 
 
 fusedConduit
   :: Monad m
-  => Conduit [String] m [String]
+  => ConduitT [String] [String] m ()
 fusedConduit = fuse numLettersConduit showConduit
 
 
-userInputSource :: Producer IO String
+userInputSource :: forall i. ConduitT i String IO ()
 userInputSource = do
   let
     loop acc = do
@@ -219,7 +219,7 @@ userInputSource = do
   loop []
 
 
-identityStdOutSink :: Consumer String IO ()
+identityStdOutSink :: forall o. ConduitT String o IO ()
 identityStdOutSink = awaitForever $ liftIO . putStrLn
 
 
@@ -238,11 +238,11 @@ yieldStrings = do
           return True
 
 
-userInputConduitSource :: Source IO [String]
+userInputConduitSource :: ConduitT () [String] IO ()
 userInputConduitSource = do
      CB.sourceHandle stdin
-  $= CB.lines
-  $= loop
+  .| CB.lines
+  .| loop
   where
     loop = do
       liftIO $ putStr "> "
@@ -253,17 +253,17 @@ userInputConduitSource = do
 
 
 identitiesStdOutSink
-  :: Consumer [String] IO ()
+  :: forall o. ConduitT [String] o IO ()
 identitiesStdOutSink = awaitForever $ mapM_ (liftIO . putStrLn)
 
 
 fileInputSource
   :: (Monad m, MonadResource m)
   => FilePath
-  -> Source m [String]
+  -> ConduitT () [String] m ()
 fileInputSource file = do
      CB.sourceFile file
-  $= loop
+  .| loop
   where
     loop = do
       mbs <- await
@@ -276,13 +276,13 @@ fileInputSource file = do
 
 identitiesResStdOutSink
   :: (Monad m, MonadResource m)
-  => Consumer [String] m ()
+  => forall o. ConduitT [String] o m ()
 identitiesResStdOutSink = awaitForever $ mapM_ (liftIO . putStrLn)
 
 
 conduitToByteString
   :: Monad m
-  => Conduit [String] m ByteString
+  => ConduitT [String] ByteString m ()
 conduitToByteString = do
   awaitForever $ yield . pack . unlines
 
@@ -290,20 +290,20 @@ conduitToByteString = do
 multiFileInputSource
   :: MonadResource m
   => [FilePath]
-  -> Source m FilePath
+  -> ConduitT () FilePath m ()
 multiFileInputSource files = do
   mapM_ yield files
 
 
 conduitFile
   :: MonadResource m
-  => Conduit FilePath m ByteString
+  => ConduitT FilePath ByteString m ()
 conduitFile = do
   awaitForever CB.sourceFile
 
 
 byteStringStdOutSink
   :: MonadResource m
-  => Consumer ByteString m ()
+  => forall o. ConduitT ByteString o m ()
 byteStringStdOutSink = do
   awaitForever $ liftIO . putStrLn . unpack
