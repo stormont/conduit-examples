@@ -12,9 +12,9 @@ This project contains examples of using Haskell's conduit library.
 
 Prerequisites:
 
-* Have GHC version >= 7.8 installed (examples tested against 7.8.3)
-* Have Cabal version >= 1.20 installed (examples tested against 1.20.0.2)
-* Tested on Windows 8.1 and Amazon Linux AMI
+* Have GHC version >= 7.8 installed (examples tested against 7.8.3 and 8.10.7)
+* Have Cabal version >= 1.20 installed (examples tested against 1.20.0.2 and 3.8.1.0)
+* Tested on Windows 8.1, Amazon Linux AMI and Ubuntu 22.04
 * `telnet` or an equivalent tool must be available on the system (for running the examples)
 
 Installing:
